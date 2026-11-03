@@ -90,11 +90,8 @@
                     <a href="{{ route('admin.users.index') }}" class="{{ request()->routeIs('admin.users.*') ? 'active' : '' }}">
                         <x-icon name="user" /> Pengguna Panel
                     </a>
-                    <a href="{{ route('admin.settings.edit') }}" class="{{ request()->routeIs('admin.settings.*') ? 'active' : '' }}">
+                    <a href="{{ route('admin.settings.edit') }}" class="{{ request()->routeIs('admin.settings.*', 'admin.backups.*', 'admin.restore.*') ? 'active' : '' }}">
                         <x-icon name="settings" /> Pengaturan
-                    </a>
-                    <a href="{{ route('admin.backups.index') }}" class="{{ request()->routeIs('admin.backups.*') ? 'active' : '' }}">
-                        <x-icon name="download" /> Backup Database
                     </a>
                 @endif
             @else
@@ -118,22 +115,24 @@
         <div class="sidebar-foot">
             <strong>{{ auth()->user()->name }}</strong>
             <span class="role">{{ auth()->user()->roleLabel() }}</span>
-            <form method="POST" action="{{ route('logout') }}">
-                @csrf
-                <button type="submit" class="btn btn-sm btn-outline btn-block">
-                    <x-icon name="log-out" size="14px" /> Keluar
-                </button>
-            </form>
         </div>
     </aside>
 
     <div class="admin-main">
         <header class="admin-topbar">
             <div class="crumb">Panel / <strong>@yield('title', 'Dashboard')</strong></div>
-            <div class="admin-user">
-                <span class="dot"></span>
-                <span>{{ auth()->user()->name }}</span>
-                <div class="avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
+            <div class="admin-topbar-actions">
+                <div class="admin-user">
+                    <span class="dot"></span>
+                    <span>{{ auth()->user()->name }}</span>
+                    <div class="avatar">{{ strtoupper(substr(auth()->user()->name, 0, 1)) }}</div>
+                </div>
+                <form method="POST" action="{{ route('logout') }}" class="admin-logout">
+                    @csrf
+                    <button type="submit" class="btn btn-sm btn-outline" title="Keluar" aria-label="Keluar">
+                        <x-icon name="log-out" size="14px" /><span>Keluar</span>
+                    </button>
+                </form>
             </div>
         </header>
 

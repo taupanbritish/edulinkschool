@@ -3,6 +3,7 @@
 namespace App\Support;
 
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Storage;
 use RuntimeException;
@@ -42,17 +43,17 @@ class DatabaseBackup
         return self::DIRECTORY.'/'.$name;
     }
 
-    public function create(): string
+    public function create(string $prefix = 'sekolah'): string
     {
         $connection = config('database.connections.pgsql');
         $disk = Storage::disk(self::DISK);
-        $name = 'sekolah-'.now()->format('Ymd-His').'.dump';
+        $name = $prefix.'-'.now()->format('Ymd-His').'.dump';
         $path = $this->path($name);
         $absolute = $disk->path($path);
         File::ensureDirectoryExists(dirname($absolute));
 
         $process = new Process(
-            $this->command($connection, $absolute),
+            $this->dumpCommand($connection, $absolute),
             base_path(),
             filled($connection['password'] ?? null) ? ['PGPASSWORD' => $connection['password']] : [],
         );
@@ -77,6 +78,46 @@ class DatabaseBackup
         return $name;
     }
 
+    /**
+     * Pulihkan database dari berkas dump dan kembalikan nama backup pengaman.
+     */
+    public function restoreFile(string $absolute): string
+    {
+        if (! is_file($absolute)) {
+            throw new RuntimeException('Berkas backup tidak ditemukan.');
+        }
+
+        @set_time_limit(0);
+        ignore_user_abort(true);
+
+        $connection = config('database.connections.pgsql');
+        $lock = $this->lock();
+
+        try {
+            $this->assertRestorable($absolute);
+
+            $putDown = ! app()->isDownForMaintenance();
+
+            if ($putDown) {
+                Artisan::call('down');
+            }
+
+            try {
+                $safety = $this->create('sekolah-pengaman');
+                $this->runRestore($connection, $absolute);
+            } finally {
+                if ($putDown) {
+                    Artisan::call('up');
+                }
+            }
+        } finally {
+            flock($lock, LOCK_UN);
+            fclose($lock);
+        }
+
+        return $safety;
+    }
+
     public function delete(string $name): bool
     {
         return Storage::disk(self::DISK)->delete($this->path($name));
@@ -98,10 +139,10 @@ class DatabaseBackup
         return $stale->count();
     }
 
-    private function command(array $connection, string $absolute): array
+    private function dumpCommand(array $connection, string $absolute): array
     {
-        $command = [
-            $this->binary(),
+        return [
+            $this->binary('pg_dump'),
             '--format=custom',
             '--no-owner',
             '--no-privileges',
@@ -112,24 +153,76 @@ class DatabaseBackup
             '--file='.$absolute,
             $connection['database'],
         ];
-
-        return $command;
     }
 
-    private function binary(): string
+    private function restoreCommand(array $connection, string $absolute): array
     {
-        $configured = config('database.connections.pgsql.dump_binary');
+        return [
+            $this->binary('pg_restore'),
+            '--clean',
+            '--if-exists',
+            '--no-owner',
+            '--no-privileges',
+            '--single-transaction',
+            '--host='.$connection['host'],
+            '--port='.$connection['port'],
+            '--username='.$connection['username'],
+            '--no-password',
+            '--dbname='.$connection['database'],
+            $absolute,
+        ];
+    }
+
+    private function assertRestorable(string $absolute): void
+    {
+        $process = new Process([$this->binary('pg_restore'), '--list', $absolute], base_path());
+        $process->setTimeout(60);
+
+        try {
+            $process->run();
+        } catch (Throwable $e) {
+            throw new RuntimeException('pg_restore tidak dapat dijalankan: '.$e->getMessage(), 0, $e);
+        }
+
+        if (! $process->isSuccessful()) {
+            throw new RuntimeException('Berkas backup tidak valid dan tidak dipulihkan. '.$this->errorMessage($process, 'pg_restore'));
+        }
+    }
+
+    private function runRestore(array $connection, string $absolute): void
+    {
+        $process = new Process(
+            $this->restoreCommand($connection, $absolute),
+            base_path(),
+            filled($connection['password'] ?? null) ? ['PGPASSWORD' => $connection['password']] : [],
+        );
+        $process->setTimeout((int) config('backup.restore_timeout', 600));
+
+        try {
+            $process->run();
+        } catch (Throwable $e) {
+            throw new RuntimeException('pg_restore tidak dapat dijalankan: '.$e->getMessage(), 0, $e);
+        }
+
+        if (! $process->isSuccessful()) {
+            throw new RuntimeException($this->errorMessage($process, 'pg_restore'));
+        }
+    }
+
+    private function binary(string $tool): string
+    {
+        $configured = config('database.connections.pgsql.'.($tool === 'pg_restore' ? 'restore_binary' : 'dump_binary'));
 
         if (filled($configured)) {
             return $configured;
         }
 
         $candidates = array_filter([
-            '/opt/homebrew/bin/pg_dump',
-            '/usr/local/bin/pg_dump',
-            '/usr/bin/pg_dump',
-            '/Applications/Postgres.app/Contents/Versions/latest/bin/pg_dump',
-            ...(glob('/Library/PostgreSQL/*/bin/pg_dump') ?: []),
+            '/opt/homebrew/bin/'.$tool,
+            '/usr/local/bin/'.$tool,
+            '/usr/bin/'.$tool,
+            '/Applications/Postgres.app/Contents/Versions/latest/bin/'.$tool,
+            ...(glob('/Library/PostgreSQL/*/bin/'.$tool) ?: []),
         ]);
 
         foreach ($candidates as $candidate) {
@@ -138,17 +231,42 @@ class DatabaseBackup
             }
         }
 
-        return 'pg_dump';
+        return $tool;
     }
 
-    private function errorMessage(Process $process): string
+    private function errorMessage(Process $process, string $tool = 'pg_dump'): string
     {
         $message = trim($process->getErrorOutput()) ?: trim($process->getOutput());
 
         if ($message === '') {
-            return 'pg_dump keluar dengan kode '.$process->getExitCode().'. Pastikan DB_DUMP_BINARY menunjuk ke pg_dump yang sesuai.';
+            $variable = $tool === 'pg_restore' ? 'DB_RESTORE_BINARY' : 'DB_DUMP_BINARY';
+
+            return $tool.' keluar dengan kode '.$process->getExitCode().'. Pastikan '.$variable.' menunjuk ke '.$tool.' yang sesuai.';
         }
 
-        return 'pg_dump gagal: '.mb_strimwidth($message, 0, 300, '…');
+        return $tool.' gagal: '.mb_strimwidth($message, 0, 300, '…');
+    }
+
+    /**
+     * @return resource
+     */
+    private function lock()
+    {
+        $directory = storage_path('framework');
+        File::ensureDirectoryExists($directory);
+
+        $handle = fopen($directory.'/database-restore.lock', 'c');
+
+        if ($handle === false) {
+            throw new RuntimeException('Berkas kunci restore tidak dapat dibuat.');
+        }
+
+        if (! flock($handle, LOCK_EX | LOCK_NB)) {
+            fclose($handle);
+
+            throw new RuntimeException('Proses restore lain sedang berjalan. Coba lagi setelah selesai.');
+        }
+
+        return $handle;
     }
 }

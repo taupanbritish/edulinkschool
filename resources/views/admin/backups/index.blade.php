@@ -9,12 +9,15 @@
         <p>Buat salinan penuh database PostgreSQL, unduh, atau hapus berkas lama.</p>
     </div>
     <div class="page-actions">
+        <a href="{{ route('admin.restore.form') }}" class="btn btn-outline"><x-icon name="upload" size="15px" /> Restore Database</a>
         <form method="POST" action="{{ route('admin.backups.store') }}" onsubmit="this.querySelector('button').disabled = true;">
             @csrf
             <button type="submit" class="btn btn-primary"><x-icon name="download" size="15px" /> Buat Backup Sekarang</button>
         </form>
     </div>
 </div>
+
+@include('admin.partials.settings-tabs')
 
 <div class="panel">
     <div class="panel-head">
@@ -37,7 +40,7 @@
                         <tr>
                             <td>
                                 <span class="cell-main">{{ $file['name'] }}</span>
-                                <span class="cell-sub">Format PostgreSQL custom (.dump)</span>
+                                <span class="cell-sub">Format PostgreSQL custom (.dump)@if(str_starts_with($file['name'], 'sekolah-pengaman-')) · backup pengaman otomatis @endif</span>
                             </td>
                             <td>{{ $size }}</td>
                             <td>{{ now()->setTimestamp($file['modified'])->locale('id')->translatedFormat('d M Y, H:i') }}</td>
@@ -64,5 +67,6 @@
     Backup otomatis berjalan setiap hari pukul {{ $dailyAt }} dan hanya {{ $keep }} berkas terbaru yang disimpan.
     Berkas disimpan di penyimpanan privat server dan hanya dapat diunduh oleh administrator.
     Backup memuat seluruh tabel database; foto dan media unggahan tidak termasuk.
+    Restore dilakukan dari halaman <a href="{{ route('admin.restore.form') }}">Restore Database</a> dengan mengunggah berkas yang telah diunduh.
 </p>
 @endsection

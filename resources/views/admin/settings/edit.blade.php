@@ -13,6 +13,8 @@
     </div>
 </div>
 
+@include('admin.partials.settings-tabs')
+
 <form method="POST" action="{{ route('admin.settings.update') }}" enctype="multipart/form-data">
     @csrf
     @method('PUT')

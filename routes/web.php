@@ -124,6 +124,9 @@ Route::middleware(['auth', 'role:admin,petugas,kepala_sekolah', 'panel.writable'
         Route::delete('backups/{file}', [DatabaseBackupController::class, 'destroy'])
             ->where('file', '[A-Za-z0-9][A-Za-z0-9._-]*')
             ->name('backups.destroy');
+
+        Route::get('restore', [DatabaseBackupController::class, 'restoreForm'])->name('restore.form');
+        Route::post('restore', [DatabaseBackupController::class, 'restore'])->name('restore.store');
     });
 });
 

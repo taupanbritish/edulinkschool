@@ -100,7 +100,7 @@
             </nav>
 
             <div class="header-actions">
-                <button class="nav-toggle" type="button" aria-label="Buka menu" onclick="document.getElementById('siteNav').classList.toggle('open')">
+                <button class="nav-toggle" type="button" aria-label="Buka menu" aria-controls="siteNav" aria-expanded="false">
                     <x-icon name="menu" />
                 </button>
 

@@ -147,3 +147,24 @@
     });
   });
 })();
+
+(() => {
+  'use strict';
+
+  const form = document.getElementById('restoreUploadForm');
+  if (!form) return;
+
+  const file = form.querySelector('[data-restore-file-input]');
+  const confirmation = form.querySelector('input[name="confirmation"]');
+  const submit = form.querySelector('[data-restore-submit]');
+
+  const sync = () => {
+    submit.disabled = !file.files?.length || confirmation.value.trim().toUpperCase() !== 'PULIHKAN';
+  };
+
+  file.addEventListener('change', sync);
+  confirmation.addEventListener('input', sync);
+  form.addEventListener('submit', () => { submit.disabled = true; });
+
+  sync();
+})();

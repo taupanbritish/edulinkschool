@@ -933,6 +933,8 @@ ul { margin: 0; padding-left: 1.1rem; }
   border: 1px solid transparent;
 }
 .flash-success { background: var(--green-50); border-color: #bbf7d0; color: #166534; }
+.flash-restore strong { display: block; font-size: .9rem; margin-bottom: .1rem; }
+.flash-restore span { font-size: .8rem; }
 .flash-error { background: var(--red-50); border-color: #fecaca; color: #991b1b; }
 .flash-info { background: var(--blue-50); border-color: #bfdbfe; color: #1e40af; }
 
@@ -1197,6 +1199,8 @@ ul { margin: 0; padding-left: 1.1rem; }
 .admin-topbar .crumb { font-size: .8rem; color: var(--muted); }
 .admin-topbar .crumb strong { color: var(--ink); }
 .admin-user { display: flex; align-items: center; gap: .7rem; font-size: .82rem; }
+.admin-topbar-actions { display: flex; align-items: center; gap: .6rem; margin-left: auto; }
+.admin-logout { margin: 0; }
 .admin-user .avatar {
   width: 34px; height: 34px; border-radius: 9px;
   background: #eef4fa; color: var(--navy-800);
@@ -1223,6 +1227,11 @@ ul { margin: 0; padding-left: 1.1rem; }
 .page-head h1 { font-size: 1.45rem; margin-bottom: .2rem; }
 .page-head p { margin: 0; color: var(--muted); font-size: .86rem; }
 .page-actions { display: flex; gap: .6rem; flex-wrap: wrap; }
+
+.settings-tabs { display: flex; flex-wrap: wrap; gap: .35rem; margin: 0 0 1.2rem; padding: .35rem; background: #f8fafc; border: 1px solid var(--line); border-radius: 12px; }
+.settings-tabs a { padding: .5rem .85rem; border-radius: 8px; font-size: .84rem; font-weight: 600; color: var(--muted); }
+.settings-tabs a:hover { color: var(--ink); background: #fff; }
+.settings-tabs a.active { background: #fff; color: var(--ink); box-shadow: 0 1px 3px rgba(15, 23, 42, .14); }
 
 .stat-grid-admin { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 1rem; margin-bottom: 1.4rem; }
 .stat-card {
@@ -1329,6 +1338,19 @@ table.data .num { text-align: right; font-variant-numeric: tabular-nums; }
 .today-item span { font-size: .76rem; color: var(--muted); }
 
 .section-split { display: grid; grid-template-columns: 1.4fr .9fr; gap: 1.2rem; align-items: start; }
+.section-split > * { min-width: 0; }
+
+.restore-grid { display: grid; grid-template-columns: minmax(0, 1fr) 320px; gap: 1.2rem; align-items: start; }
+.restore-steps { margin: 0 0 1.25rem; padding-left: 1.15rem; display: grid; gap: .4rem; color: var(--muted); font-size: .86rem; line-height: 1.5; }
+.restore-steps strong { color: var(--ink); }
+.restore-steps code, .restore-notes code { font-size: .8em; background: #f1f5f9; border-radius: 4px; padding: .1rem .3rem; }
+.restore-grid .field { margin-bottom: 1rem; }
+.restore-grid input[type="file"] { padding: .6rem .7rem; cursor: pointer; }
+.restore-warning { margin: 1.1rem 0 1.2rem; padding: .8rem .9rem; border: 1px solid #fed7aa; border-radius: 10px; background: #fff7ed; color: #9a3412; font-size: .82rem; line-height: 1.5; }
+.restore-warning strong { display: block; margin-bottom: .15rem; }
+.restore-submit { width: 100%; justify-content: center; }
+.restore-notes { margin: 0 0 .9rem; padding-left: 1.1rem; display: grid; gap: .5rem; color: var(--muted); font-size: .82rem; line-height: 1.5; }
+.restore-note-foot { margin: 0; font-size: .82rem; }
 .stack { display: flex; flex-direction: column; gap: 1.2rem; }
 
 .attendance-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: .6rem; }
@@ -1345,6 +1367,7 @@ table.data .num { text-align: right; font-variant-numeric: tabular-nums; }
   .footer-grid { grid-template-columns: 1fr 1fr; }
   .stat-grid-admin { grid-template-columns: repeat(2, 1fr); }
   .section-split { grid-template-columns: 1fr; }
+  .restore-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 860px) {
@@ -1360,6 +1383,11 @@ table.data .num { text-align: right; font-variant-numeric: tabular-nums; }
     flex-direction: column;
     align-items: stretch;
     box-shadow: var(--shadow);
+    max-height: calc(100vh - 74px);
+    max-height: calc(100dvh - 74px);
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    -webkit-overflow-scrolling: touch;
   }
   .site-nav.open { display: flex; }
   .nav-toggle { display: inline-flex; }
@@ -1395,6 +1423,9 @@ table.data .num { text-align: right; font-variant-numeric: tabular-nums; }
 }
 
 @media (max-width: 620px) {
+  .admin-topbar { padding: .7rem 1rem; }
+  .admin-topbar .crumb { display: none; }
+  .admin-user > span { display: none; }
   .grid-3, .grid-4, .grid-2, .form-grid { grid-template-columns: 1fr; }
   .hero { padding: 3rem 0; }
   .section { padding: 3rem 0; }

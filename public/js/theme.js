@@ -180,7 +180,55 @@
     }
   }
 
+  function initMobileNav() {
+    var toggle = document.querySelector('.nav-toggle');
+    var nav = document.getElementById('siteNav');
+    if (!toggle || !nav) {
+      return;
+    }
+
+    function isMobile() {
+      return window.matchMedia && window.matchMedia('(max-width: 860px)').matches;
+    }
+
+    function fit() {
+      if (!nav.classList.contains('open') || !isMobile()) {
+        nav.style.maxHeight = '';
+        return;
+      }
+      var top = nav.getBoundingClientRect().top;
+      nav.style.maxHeight = Math.max(180, window.innerHeight - top - 12) + 'px';
+    }
+
+    function setOpen(open) {
+      nav.classList.toggle('open', open);
+      toggle.setAttribute('aria-expanded', open ? 'true' : 'false');
+      fit();
+    }
+
+    toggle.addEventListener('click', function () {
+      setOpen(!nav.classList.contains('open'));
+    });
+
+    nav.addEventListener('click', function (event) {
+      if (event.target.closest('a')) {
+        setOpen(false);
+      }
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape') {
+        setOpen(false);
+      }
+    });
+
+    window.addEventListener('resize', fit);
+    window.addEventListener('scroll', fit, { passive: true });
+  }
+
   function init() {
+    initMobileNav();
+
     var picker = document.querySelector('[data-theme-picker]');
     if (!picker) {
       return;

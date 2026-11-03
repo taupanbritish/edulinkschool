@@ -15,6 +15,16 @@
     <h1>Selamat datang kembali</h1>
     <p>Masuk untuk mengelola data akademik sekolah.</p>
 
+    @if(session('restore_success'))
+        <div class="flash flash-success flash-restore" role="status">
+            <x-icon name="check" />
+            <div>
+                <strong>Berhasil Restore Database</strong>
+                <span>Data telah dipulihkan dari {{ session('restore_success.file') }}. Backup pengaman {{ session('restore_success.safety') }} dibuat. Silakan masuk kembali.</span>
+            </div>
+        </div>
+    @endif
+
     @if($errors->any())
         <div class="flash flash-error">
             <x-icon name="alert" />
