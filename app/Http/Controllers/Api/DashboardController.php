@@ -9,8 +9,10 @@ use App\Http\Resources\AttendanceResource;
 use App\Http\Resources\GradeResource;
 use App\Http\Resources\ScheduleResource;
 use App\Http\Resources\StudentResource;
+use App\Http\Resources\TeachingJournalResource;
 use App\Http\Resources\UserResource;
 use App\Models\Announcement;
+use App\Models\TeachingJournal;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 
@@ -66,6 +68,21 @@ class DashboardController extends Controller
                 $student->attendances()
                     ->latest('date')
                     ->take(5)
+                    ->get()
+            ),
+            'jurnal_terbaru' => TeachingJournalResource::collection(
+                TeachingJournal::forClassroom($student->classroom_id)
+                    ->with([
+                        'teachingAssignment.subject',
+                        'teachingAssignment.teacher',
+                        'teachingAssignment.classroom',
+                        'schedule',
+                        'attachments',
+                        'attendances' => fn ($query) => $query->where('student_id', $student->id),
+                    ])
+                    ->orderByDesc('date')
+                    ->orderByDesc('starts_at')
+                    ->take(4)
                     ->get()
             ),
             'pengumuman_terbaru' => AnnouncementResource::collection(

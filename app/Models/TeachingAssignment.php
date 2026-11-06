@@ -35,4 +35,9 @@ class TeachingAssignment extends Model
     {
         return $this->hasMany(Grade::class);
     }
+
+    public function journals()
+    {
+        return $this->hasMany(TeachingJournal::class);
+    }
 }

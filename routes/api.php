@@ -7,6 +7,7 @@ use App\Http\Controllers\Api\GradeController;
 use App\Http\Controllers\Api\ProfileController;
 use App\Http\Controllers\Api\ScheduleController;
 use App\Http\Controllers\Api\SchoolController;
+use App\Http\Controllers\Api\TeachingJournalController;
 use Illuminate\Support\Facades\Route;
 
 Route::get('sekolah', [SchoolController::class, 'show']);
@@ -25,6 +26,8 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('jadwal', [ScheduleController::class, 'index']);
         Route::get('nilai', [GradeController::class, 'index']);
         Route::get('absensi', [AttendanceController::class, 'index']);
+        Route::get('jurnal', [TeachingJournalController::class, 'index']);
+        Route::get('jurnal/{journal}', [TeachingJournalController::class, 'show']);
         Route::get('profil', [ProfileController::class, 'index']);
     });
 });

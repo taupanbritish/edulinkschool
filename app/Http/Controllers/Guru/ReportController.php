@@ -8,18 +8,11 @@ use App\Models\Classroom;
 use App\Models\Grade;
 use App\Models\Student;
 use App\Models\TeachingAssignment;
+use App\Support\ReportWriter;
 use Carbon\Carbon;
-use Dompdf\Dompdf;
-use Dompdf\Options;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Support\Str;
-use PhpOffice\PhpSpreadsheet\Cell\DataType;
-use PhpOffice\PhpSpreadsheet\Spreadsheet;
-use PhpOffice\PhpSpreadsheet\Style\Alignment;
-use PhpOffice\PhpSpreadsheet\Style\Border;
-use PhpOffice\PhpSpreadsheet\Style\Fill;
-use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 
 class ReportController extends Controller
 {
@@ -81,7 +74,7 @@ class ReportController extends Controller
         $filename = 'nilai-'.Str::slug($assignment->classroom->name.'-'.$assignment->subject->name);
 
         if ($format === 'pdf') {
-            return $this->pdf('guru.reports.grades-pdf', [
+            return ReportWriter::pdf('guru.reports.grades-pdf', [
                 'title' => 'Laporan Daftar Nilai',
                 'meta' => $meta,
                 'rows' => $rows,
@@ -101,9 +94,9 @@ class ReportController extends Controller
             $row['notes'],
         ], $rows);
 
-        $sheet = $this->makeSpreadsheet('Daftar Nilai', $meta, $headers, $data, [5, 32, 14, 10, 10, 10, 10, 12, 40]);
+        $sheet = ReportWriter::spreadsheet('Daftar Nilai', $meta, $headers, $data, [5, 32, 14, 10, 10, 10, 10, 12, 40]);
 
-        return $this->excel($sheet, $filename);
+        return ReportWriter::xlsx($sheet, $filename);
     }
 
     public function attendance(Request $request, string $format): Response
@@ -165,7 +158,7 @@ class ReportController extends Controller
         $filename = 'absensi-'.Str::slug($classroom->name.'-'.$start->format('Y-m'));
 
         if ($format === 'pdf') {
-            return $this->pdf('guru.reports.attendance-pdf', [
+            return ReportWriter::pdf('guru.reports.attendance-pdf', [
                 'title' => 'Laporan Absensi Bulanan',
                 'meta' => $meta,
                 'rows' => $rows,
@@ -188,96 +181,8 @@ class ReportController extends Controller
 
         $data[] = ['', 'Jumlah', '', ...array_values($totals), array_sum($totals), null];
 
-        $sheet = $this->makeSpreadsheet('Absensi', $meta, $headers, $data, [5, 32, 14, 9, 9, 9, 9, 10, 12]);
+        $sheet = ReportWriter::spreadsheet('Absensi', $meta, $headers, $data, [5, 32, 14, 9, 9, 9, 9, 10, 12]);
 
-        return $this->excel($sheet, $filename);
-    }
-
-    private function pdf(string $view, array $data, string $filename): Response
-    {
-        $options = new Options;
-        $options->set('defaultFont', 'DejaVu Sans');
-        $options->set('isRemoteEnabled', false);
-
-        $dompdf = new Dompdf($options);
-        $dompdf->loadHtml(view($view, $data)->render(), 'UTF-8');
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
-
-        return response($dompdf->output(), 200, [
-            'Content-Type' => 'application/pdf',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'.pdf"',
-        ]);
-    }
-
-    private function makeSpreadsheet(string $title, array $meta, array $headers, array $rows, array $widths): Spreadsheet
-    {
-        $spreadsheet = new Spreadsheet;
-        $sheet = $spreadsheet->getActiveSheet();
-        $sheet->setTitle($title);
-
-        $lastColumn = chr(ord('A') + count($headers) - 1);
-
-        $sheet->mergeCells("A1:{$lastColumn}1")->setCellValue('A1', $title);
-        $sheet->getStyle('A1')->getFont()->setBold(true)->setSize(14);
-        $sheet->getStyle('A1')->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-        $line = 2;
-        foreach ($meta as $label => $value) {
-            $sheet->setCellValue("A{$line}", $label.':');
-            $sheet->setCellValueExplicit("B{$line}", (string) $value, DataType::TYPE_STRING);
-            $sheet->getStyle("A{$line}")->getFont()->setBold(true);
-            $line++;
-        }
-
-        $headerRow = $line + 1;
-        foreach ($headers as $index => $header) {
-            $sheet->setCellValueExplicit(chr(ord('A') + $index).$headerRow, $header, DataType::TYPE_STRING);
-        }
-
-        $range = "A{$headerRow}:{$lastColumn}{$headerRow}";
-        $sheet->getStyle($range)->getFont()->setBold(true)->getColor()->setARGB('FFFFFFFF');
-        $sheet->getStyle($range)->getFill()->setFillType(Fill::FILL_SOLID)->getStartColor()->setARGB('FF17496E');
-        $sheet->getStyle($range)->getAlignment()->setHorizontal(Alignment::HORIZONTAL_CENTER);
-
-        $rowIndex = $headerRow + 1;
-        foreach ($rows as $row) {
-            foreach ($row as $index => $value) {
-                $coordinate = chr(ord('A') + $index).$rowIndex;
-
-                if (is_int($value) || is_float($value)) {
-                    $sheet->setCellValue($coordinate, $value);
-                } else {
-                    $sheet->setCellValueExplicit($coordinate, (string) $value, DataType::TYPE_STRING);
-                }
-            }
-            $rowIndex++;
-        }
-
-        $dataRange = "A{$headerRow}:{$lastColumn}".($rowIndex - 1);
-        $sheet->getStyle($dataRange)->getBorders()->getAllBorders()->setBorderStyle(Border::BORDER_THIN);
-
-        foreach ($widths as $index => $width) {
-            $sheet->getColumnDimension(chr(ord('A') + $index))->setWidth($width);
-        }
-
-        $sheet->freezePane('A'.($headerRow + 1));
-        $sheet->setAutoFilter($range);
-
-        return $spreadsheet;
-    }
-
-    private function excel(Spreadsheet $spreadsheet, string $filename): Response
-    {
-        $writer = new Xlsx($spreadsheet);
-
-        ob_start();
-        $writer->save('php://output');
-        $content = (string) ob_get_clean();
-
-        return response($content, 200, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            'Content-Disposition' => 'attachment; filename="'.$filename.'.xlsx"',
-        ]);
+        return ReportWriter::xlsx($sheet, $filename);
     }
 }

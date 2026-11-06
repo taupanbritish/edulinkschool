@@ -32,6 +32,11 @@ class Teacher extends Model
         return $this->hasManyThrough(Schedule::class, TeachingAssignment::class);
     }
 
+    public function journals()
+    {
+        return $this->hasManyThrough(TeachingJournal::class, TeachingAssignment::class);
+    }
+
     public function genderLabel(): string
     {
         return $this->gender === 'P' ? 'Perempuan' : 'Laki-laki';

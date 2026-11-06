@@ -9,7 +9,8 @@ class MediaController extends Controller
 {
     public function show(string $path): BinaryFileResponse
     {
-        abort_if(str_contains($path, '..') || ! preg_match('~^(photos|videos)/~', $path), 404);
+        abort_if(str_contains($path, '..') || ! preg_match('~^(photos|videos|documents)/~', $path), 404);
+        abort_if(str_starts_with($path, 'documents/') && ! str_ends_with(strtolower($path), '.pdf'), 404);
 
         $disk = Storage::disk('public');
 

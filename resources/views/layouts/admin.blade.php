@@ -43,6 +43,9 @@
                 <a href="{{ route('admin.schedules.index') }}" class="{{ request()->routeIs('admin.schedules.*') ? 'active' : '' }}">
                     <x-icon name="calendar" /> Jadwal
                 </a>
+                <a href="{{ route('admin.journals.index') }}" class="{{ request()->routeIs('admin.journals.*') ? 'active' : '' }}">
+                    <x-icon name="book-open" /> Jurnal Mengajar
+                </a>
                 <div class="sidebar-label">Akademik &amp; Prestasi</div>
                 <a href="{{ route('admin.curriculum-groups.index') }}" class="{{ request()->routeIs('admin.curriculum-groups.*') ? 'active' : '' }}">
                     <x-icon name="book-open" /> Kelompok Mapel
@@ -100,6 +103,9 @@
                 </a>
                 <a href="{{ route('guru.grades.index') }}" class="{{ request()->routeIs('guru.grades.*') ? 'active' : '' }}">
                     <x-icon name="chart" /> Input Nilai
+                </a>
+                <a href="{{ route('guru.journals.index') }}" class="{{ request()->routeIs('guru.journals.*') ? 'active' : '' }}">
+                    <x-icon name="book-open" /> Jurnal Mengajar
                 </a>
                 @if(auth()->user()->teacher?->classrooms()->exists())
                     <a href="{{ route('guru.attendance.index') }}" class="{{ request()->routeIs('guru.attendance.*') ? 'active' : '' }}">

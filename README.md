@@ -134,7 +134,9 @@ Guru lain (`sri.wahyuni@`, `ahmad.fauzi@`, `ratna.dewi@sekolah.id`) memakai kata
 | Kontak | `/kontak` |
 | Masuk / keluar | `/login`, `POST /logout` |
 | Panel admin | `/admin` |
+| Rekap jurnal mengajar | `/admin/journals` (ekspor `?format=pdf` atau `?format=xlsx`) |
 | Ruang guru | `/guru` |
+| Jurnal mengajar (guru) | `/guru/jurnal`, `/guru/jurnal/tambah` |
 | API mobile | `/api` |
 
 Menu **Pengaturan** di panel admin berisi tiga tab: **Pengaturan Sekolah**, **Backup Database**, dan **Restore Database**.
@@ -145,8 +147,8 @@ Menu **Pengaturan** di panel admin berisi tiga tab: **Pengaturan Sekolah**, **Ba
 
 - **Administrator** — seluruh CRUD, akun panel, identitas sekolah, serta backup/restore database.
 - **Petugas Web** — CRUD data dan konten di `/admin`, tanpa Pengaturan, Pengguna Panel, dan Backup/Restore.
-- **Kepala Sekolah** — hanya membaca. Middleware `panel.writable` menolak semua permintaan ubah data.
-- **Guru** — ruang `/guru`: input nilai untuk kelas yang diajar dan absensi hanya untuk kelas yang menjadi wali kelasnya; ekspor laporan PDF/XLSX.
+- **Kepala Sekolah** — hanya membaca. Middleware `panel.writable` menolak semua permintaan ubah data, termasuk rekap jurnal mengajar.
+- **Guru** — ruang `/guru`: input nilai untuk kelas yang diajar, jurnal mengajar per sesi jadwal (beserta kehadiran dan lampiran), serta absensi hanya untuk kelas yang menjadi wali kelasnya; ekspor laporan PDF/XLSX.
 - **Siswa / Orang tua** — tidak memakai panel web; mengakses data melalui API dan aplikasi mobile. Orang tua hanya dapat memilih anak yang tertaut.
 
 Middleware yang dipakai: `auth`, `role:<peran>`, `panel.writable`.
@@ -157,7 +159,9 @@ Middleware yang dipakai: `auth`, `role:<peran>`, `panel.writable`.
 
 **Website publik** — beranda dengan statistik, sambutan kepala sekolah, visi-misi, video YouTube, pengumuman, fasilitas, ekstrakurikuler, prestasi, kurikulum, kalender akademik, alumni, tata usaha, struktur organisasi, kesiswaan, berita dengan galeri foto/video, majalah/artikel siswa, kontak (formulir dibatasi 5 kiriman/menit), pencarian cepat, serta pengalih warna aksen dan mode gelap.
 
-**Panel admin** — siswa, guru, wali murid, kelas, mata pelajaran (beserta penugasan guru), jadwal, tata usaha, struktur organisasi, berita/pengumuman, artikel siswa, pesan & saran, fasilitas, ekstrakurikuler, organisasi siswa, bimbingan konseling, prestasi, kelompok mapel, kalender akademik, alumni, pengguna panel, impor Excel (siswa/guru/kelas/mapel), pembuatan akun otomatis (guru/siswa/wali), dan tab Pengaturan.
+**Panel admin** — siswa, guru, wali murid, kelas, mata pelajaran (beserta penugasan guru), jadwal, tata usaha, struktur organisasi, berita/pengumuman, artikel siswa, pesan & saran, fasilitas, ekstrakurikuler, organisasi siswa, bimbingan konseling, prestasi, kelompok mapel, kalender akademik, alumni, pengguna panel, impor Excel (siswa/guru/kelas/mapel), pembuatan akun otomatis (guru/siswa/wali), rekap jurnal mengajar (filter guru/kelas/bulan, ekspor PDF/XLSX), dan tab Pengaturan.
+
+**Ruang guru** — input nilai, absensi wali kelas, dan jurnal mengajar. Jurnal diisi per sesi jadwal pada tanggal yang dipilih (default hari ini) dengan kelas, mapel, dan jam terisi otomatis; satu jurnal per sesi + tanggal. Isian mencakup materi, kegiatan, PR/tugas, catatan, kehadiran seluruh siswa, serta maksimal 6 lampiran foto/dokumen. Guru hanya dapat mengubah atau menghapus jurnal miliknya.
 
 **Pengaturan sekolah** — identitas, NPSN, akreditasi, tahun berdiri, logo, favicon, kontak, jam layanan, tautan Maps, media sosial, foto & sambutan kepala sekolah, visi-misi, sejarah, video beranda, serta nama dan penjelasan kurikulum.
 
@@ -170,6 +174,7 @@ Middleware yang dipakai: `auth`, `role:<peran>`, `panel.writable`.
 - Foto siswa/guru/staf/alumni, logo, dan foto kepala sekolah: JPG/PNG/WEBP, maksimal 2 MB.
 - Favicon: PNG/ICO/JPG/WEBP, maksimal 1 MB.
 - Galeri berita: hingga 12 foto (JPG/PNG/WEBP, 4 MB per foto) dan 4 video (MP4/WEBM, 50 MB per video), ditambah tautan YouTube.
+- Lampiran jurnal mengajar: hingga 6 berkas JPG/PNG/WEBP atau PDF, maksimal 4 MB per berkas.
 - Berkas disimpan di disk privat `storage/app/public` dan disajikan lewat rute `/media/{path}` yang hanya mengizinkan awalan `photos/` atau `videos/`. Symlink `public/storage` tidak dipakai.
 - Data demo menyalin foto contoh ke `storage/app/public/photos/demo/`; seeder tidak menimpa berkas yang sudah diunggah.
 
@@ -194,9 +199,11 @@ Semua endpoint mengembalikan JSON. Endpoint bertanda 🔒 memerlukan header `Aut
 | GET 🔒 | `/api/jadwal` | Jadwal per hari (`day` 1–6) |
 | GET 🔒 | `/api/nilai` | Rekap nilai per mapel |
 | GET 🔒 | `/api/absensi` | Rekap absensi (`month`, `year`) |
+| GET 🔒 | `/api/jurnal` | Daftar jurnal kelas siswa (`month`, `year`, `student_id`) dan ringkasan kehadiran |
+| GET 🔒 | `/api/jurnal/{journal}` | Detail jurnal beserta kehadiran siswa dan lampiran |
 | GET 🔒 | `/api/profil` | Profil siswa, wali, dan sekolah |
 
-Endpoint data siswa menerima `student_id` opsional; orang tua hanya boleh memilih anak yang tertaut (selain itu `403`).
+Endpoint data siswa menerima `student_id` opsional; orang tua hanya boleh memilih anak yang tertaut (selain itu `403`). `/api/beranda` menyertakan `jurnal_terbaru`, dan detail jurnal kelas lain membalas `403`.
 
 Contoh:
 
@@ -241,6 +248,7 @@ php artisan schedule:list       # pastikan backup:database terdaftar pukul 02:00
 ```bash
 php artisan test            # seluruh suite
 php artisan test --filter=DatabaseBackupTest
+php artisan test --filter=TeachingJournalTest
 ```
 
 Tes berjalan dengan `APP_ENV=testing`, database SQLite in-memory, cache/session array, dan tidak menyentuh database pengembangan. Backup/restore diuji memakai stub `pg_dump`/`pg_restore`, bukan database nyata. Jangan menjalankan tes atau `db:seed` di server produksi.
@@ -261,7 +269,7 @@ web/
 │   ├── Http/Controllers/
 │   │   ├── Admin/        # CRUD panel admin
 │   │   ├── Api/          # endpoint mobile (Sanctum)
-│   │   ├── Guru/         # nilai, absensi, ekspor
+│   │   ├── Guru/         # nilai, absensi, jurnal, ekspor
 │   │   ├── PublicController.php
 │   │   └── NewsController.php
 │   ├── Imports/          # impor Excel siswa/guru/kelas/mapel
@@ -277,7 +285,7 @@ web/
 ├── resources/views/      # Blade: site, admin, guru, auth, components
 ├── routes/               # web.php, api.php, console.php
 ├── storage/app/          # media publik & berkas backup (privat)
-└── tests/Feature/        # tes fitur web, API, panel, backup
+└── tests/Feature/        # tes fitur web, API, panel, backup, jurnal
 ```
 
 ---

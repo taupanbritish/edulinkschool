@@ -125,6 +125,7 @@ class ApiTest extends TestCase
                 'jadwal_hari_ini',
                 'nilai_terbaru',
                 'absensi_terbaru',
+                'jurnal_terbaru',
                 'pengumuman_terbaru',
             ]);
 

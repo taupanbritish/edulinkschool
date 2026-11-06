@@ -25,11 +25,13 @@ use App\Http\Controllers\Admin\StudentOrganizationController;
 use App\Http\Controllers\Admin\StudentWritingController;
 use App\Http\Controllers\Admin\SubjectController;
 use App\Http\Controllers\Admin\TeacherController;
+use App\Http\Controllers\Admin\TeachingJournalController as AdminTeachingJournalController;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\Guru\AttendanceController;
 use App\Http\Controllers\Guru\GradeController;
 use App\Http\Controllers\Guru\GuruDashboardController;
 use App\Http\Controllers\Guru\ReportController;
+use App\Http\Controllers\Guru\TeachingJournalController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\NewsController;
 use App\Http\Controllers\PublicController;
@@ -86,6 +88,11 @@ Route::middleware(['auth', 'role:admin,petugas,kepala_sekolah', 'panel.writable'
         ->scopeBindings()
         ->name('subjects.assignments.destroy');
     Route::resource('schedules', ScheduleController::class)->except('show');
+    Route::get('journals', [AdminTeachingJournalController::class, 'index'])->name('journals.index');
+    Route::get('journals/export/{format}', [AdminTeachingJournalController::class, 'export'])
+        ->whereIn('format', ['pdf', 'xlsx'])
+        ->name('journals.export');
+    Route::get('journals/{journal}', [AdminTeachingJournalController::class, 'show'])->name('journals.show');
     Route::resource('staff', StaffController::class)->except('show');
     Route::resource('organization', OrganizationMemberController::class)->except('show');
     Route::resource('announcements', AnnouncementController::class)->except('show');
@@ -143,6 +150,15 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
         ->whereIn('format', ['pdf', 'xlsx'])
         ->name('attendance.export');
     Route::post('absensi', [AttendanceController::class, 'store'])->name('attendance.store');
+
+    Route::get('jurnal', [TeachingJournalController::class, 'index'])->name('journals.index');
+    Route::get('jurnal/tambah', [TeachingJournalController::class, 'create'])->name('journals.create');
+    Route::post('jurnal', [TeachingJournalController::class, 'store'])->name('journals.store');
+    Route::get('jurnal/{journal}/edit', [TeachingJournalController::class, 'edit'])->name('journals.edit');
+    Route::put('jurnal/{journal}', [TeachingJournalController::class, 'update'])->name('journals.update');
+    Route::delete('jurnal/{journal}', [TeachingJournalController::class, 'destroy'])->name('journals.destroy');
+    Route::delete('jurnal/{journal}/lampiran/{attachment}', [TeachingJournalController::class, 'destroyAttachment'])
+        ->name('journals.attachments.destroy');
 });
 
 Route::get('/dashboard', function () {
