@@ -89,7 +89,7 @@ class WebTest extends TestCase
         $this->assertSame(2, substr_count($response->getContent(), 'aria-label="Navigasi halaman"'));
         $this->assertSame(2, substr_count($response->getContent(), 'aria-label="Halaman 2"'));
 
-        $this->get('/profil?guru_page=2')
+        $this->get('/profil?guru_page=3')
             ->assertOk()
             ->assertSee('Zulkifli Guru 1');
 

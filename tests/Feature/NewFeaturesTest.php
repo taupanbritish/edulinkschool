@@ -240,7 +240,7 @@ class NewFeaturesTest extends TestCase
             ->assertOk()
             ->json();
 
-        $this->assertStringContainsString('/media/photos/demo/siswa-ananda.jpg', $beranda['siswa']['foto']);
+        $this->assertStringContainsString('/media/photos/demo/siswa-l-01.jpg', $beranda['siswa']['foto']);
 
         $jadwal = $this->withHeader('Authorization', 'Bearer '.$token)
             ->getJson('/api/jadwal')

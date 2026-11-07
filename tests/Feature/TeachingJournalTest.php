@@ -7,7 +7,6 @@ use App\Models\Student;
 use App\Models\Teacher;
 use App\Models\TeachingJournal;
 use App\Models\TeachingJournalAttachment;
-use App\Models\User;
 use Carbon\Carbon;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -143,7 +142,7 @@ class TeachingJournalTest extends TestCase
             ->post(route('guru.journals.store'), $this->payload($schedule, '2026-11-03'))
             ->assertSessionHasErrors('date');
 
-        $otherDay = $this->ownSchedule(2);
+        $otherDay = $this->ownSchedule(4);
 
         $this->from(route('guru.journals.create'))
             ->post(route('guru.journals.store'), $this->payload($otherDay, self::DAY))

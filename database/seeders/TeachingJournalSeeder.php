@@ -253,6 +253,48 @@ class TeachingJournalSeeder extends Seeder
                     'notes' => 'Jaga etika saat wawancara.',
                 ],
             ],
+            'PABP' => [
+                [
+                    'topic' => 'Akhlak mulia dalam kehidupan sehari-hari',
+                    'activity' => 'Diskusi contoh perilaku jujur, amanah, dan menghormati orang tua di lingkungan sekolah.',
+                    'assignment' => 'Tulis refleksi satu kebaikan yang dilakukan minggu ini.',
+                    'notes' => null,
+                ],
+                [
+                    'topic' => 'Toleransi dan kerukunan umat beragama',
+                    'activity' => 'Studi kasus saling menghormati perbedaan keyakinan di masyarakat.',
+                    'assignment' => 'Buat poster sederhana tentang toleransi.',
+                    'notes' => 'Hargai pendapat teman saat diskusi.',
+                ],
+            ],
+            'PPKN' => [
+                [
+                    'topic' => 'Nilai-nilai Pancasila dalam kehidupan berbangsa',
+                    'activity' => 'Mengaitkan sila Pancasila dengan contoh nyata di lingkungan sekolah.',
+                    'assignment' => 'Berikan satu contoh penerapan tiap sila.',
+                    'notes' => null,
+                ],
+                [
+                    'topic' => 'Hak dan kewajiban warga negara',
+                    'activity' => 'Diskusi keseimbangan hak dan kewajiban siswa sebagai warga negara.',
+                    'assignment' => 'Susun tabel hak dan kewajiban di sekolah.',
+                    'notes' => null,
+                ],
+            ],
+            'INF' => [
+                [
+                    'topic' => 'Berpikir komputasional dan algoritma',
+                    'activity' => 'Menyusun algoritma kegiatan sehari-hari lalu menerjemahkannya ke flowchart.',
+                    'assignment' => 'Buat flowchart proses meminjam buku perpustakaan.',
+                    'notes' => null,
+                ],
+                [
+                    'topic' => 'Literasi digital dan keamanan data',
+                    'activity' => 'Mengidentifikasi hoaks dan membahas praktik menjaga data pribadi di internet.',
+                    'assignment' => 'Tulis tiga tips menjaga keamanan akun digital.',
+                    'notes' => 'Gunakan contoh kasus yang relevan dengan siswa.',
+                ],
+            ],
             'PJOK' => [
                 [
                     'topic' => 'Permainan bola voli',
