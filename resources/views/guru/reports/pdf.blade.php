@@ -7,10 +7,17 @@
         @page { margin: 26px 28px 34px; }
         * { box-sizing: border-box; }
         body { font-family: "DejaVu Sans", sans-serif; font-size: 10px; color: #1b2a3a; }
-        .header { border-bottom: 2px solid #17496e; padding-bottom: 8px; margin-bottom: 10px; }
-        .header h1 { font-size: 15px; margin: 0 0 2px; color: #17496e; }
-        .header p { margin: 0; font-size: 9px; color: #5a6b7c; }
-        .header h2 { font-size: 12px; margin: 8px 0 0; text-align: center; letter-spacing: .4px; }
+        .header { margin-bottom: 12px; }
+        table.kop { width: 100%; border-collapse: collapse; }
+        table.kop td { padding: 0; vertical-align: middle; }
+        td.kop-logo { width: 64px; }
+        td.kop-logo img { width: 56px; height: 56px; display: block; }
+        .kop-logo-fallback { width: 56px; height: 56px; line-height: 56px; text-align: center; background: #17496e; color: #ffffff; font-size: 24px; font-weight: bold; }
+        td.kop-identity { padding-left: 12px; }
+        .kop-school { font-size: 16px; font-weight: bold; color: #17496e; letter-spacing: .3px; line-height: 1.25; }
+        .kop-line { margin-top: 3px; font-size: 8.5px; color: #5a6b7c; line-height: 1.35; }
+        .kop-rule { margin-top: 8px; border-top: 3px solid #17496e; border-bottom: 1px solid #9fb4c7; height: 2px; }
+        .report-title { margin: 10px 0 14px; padding: 5px 8px; background: #e8eff5; border-left: 4px solid #17496e; text-align: center; font-size: 10.5px; font-weight: bold; letter-spacing: .9px; color: #123c5a; text-transform: uppercase; }
         table.meta { width: 100%; border-collapse: collapse; margin-bottom: 12px; }
         table.meta th { text-align: left; width: 95px; font-weight: bold; color: #5a6b7c; padding: 1px 4px 1px 0; font-size: 9px; }
         table.meta td { padding: 1px 4px 1px 0; font-size: 9px; }
@@ -31,12 +38,38 @@
     </style>
 </head>
 <body>
+@php
+    $logo = \App\Support\School::logoDataUri();
+    $contactParts = array_filter([
+        filled($school['npsn'] ?? null) ? 'NPSN '.$school['npsn'] : null,
+        filled($school['email'] ?? null) ? $school['email'] : null,
+        filled($school['phone'] ?? null) ? 'Telp. '.$school['phone'] : null,
+    ]);
+    $initial = \Illuminate\Support\Str::upper(\Illuminate\Support\Str::substr($school['school_short'] ?? $school['school_name'] ?? 'Sekolah', 0, 1));
+@endphp
 <div class="header">
-    <h1>{{ $school['school_name'] ?? 'Sekolah' }}</h1>
-    @if(! empty($school['school_address']))
-        <p>{{ $school['school_address'] }}</p>
-    @endif
-    <h2>{{ $title }}</h2>
+    <table class="kop">
+        <tr>
+            <td class="kop-logo">
+                @if($logo)
+                    <img src="{{ $logo }}" alt="Logo sekolah">
+                @else
+                    <div class="kop-logo-fallback">{{ $initial }}</div>
+                @endif
+            </td>
+            <td class="kop-identity">
+                <div class="kop-school">{{ $school['school_name'] ?? 'Sekolah' }}</div>
+                @if(filled($school['address'] ?? null))
+                    <div class="kop-line">{{ $school['address'] }}</div>
+                @endif
+                @if($contactParts !== [])
+                    <div class="kop-line">{{ implode(' • ', $contactParts) }}</div>
+                @endif
+            </td>
+        </tr>
+    </table>
+    <div class="kop-rule"></div>
+    <div class="report-title">{{ $title }}</div>
 </div>
 
 <table class="meta">
