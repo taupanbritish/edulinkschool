@@ -80,6 +80,12 @@ Route::middleware(['auth', 'panel.writable'])->prefix('admin')->name('admin.')->
         Route::resource('classrooms', ClassroomController::class)->only('index');
         Route::resource('subjects', SubjectController::class)->only('index');
         Route::resource('schedules', ScheduleController::class)->except('show');
+
+        Route::get('journals', [AdminTeachingJournalController::class, 'index'])->name('journals.index');
+        Route::get('journals/export/{format}', [AdminTeachingJournalController::class, 'export'])
+            ->whereIn('format', ['pdf', 'xlsx'])
+            ->name('journals.export');
+        Route::get('journals/{journal}', [AdminTeachingJournalController::class, 'show'])->name('journals.show');
     });
 
     Route::middleware('role:admin,petugas,kepala_sekolah')->group(function () {
@@ -95,11 +101,6 @@ Route::middleware(['auth', 'panel.writable'])->prefix('admin')->name('admin.')->
         Route::delete('subjects/{subject}/assignments/{assignment}', [SubjectController::class, 'destroyAssignment'])
             ->scopeBindings()
             ->name('subjects.assignments.destroy');
-        Route::get('journals', [AdminTeachingJournalController::class, 'index'])->name('journals.index');
-        Route::get('journals/export/{format}', [AdminTeachingJournalController::class, 'export'])
-            ->whereIn('format', ['pdf', 'xlsx'])
-            ->name('journals.export');
-        Route::get('journals/{journal}', [AdminTeachingJournalController::class, 'show'])->name('journals.show');
         Route::resource('staff', StaffController::class)->except('show');
         Route::resource('organization', OrganizationMemberController::class)->except('show');
         Route::resource('announcements', AnnouncementController::class)->except('show');

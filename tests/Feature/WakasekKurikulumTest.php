@@ -7,6 +7,7 @@ use App\Models\Schedule;
 use App\Models\Subject;
 use App\Models\Teacher;
 use App\Models\TeachingAssignment;
+use App\Models\TeachingJournal;
 use App\Models\User;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -51,6 +52,7 @@ class WakasekKurikulumTest extends TestCase
             ->assertSee(route('admin.classrooms.index'))
             ->assertSee(route('admin.subjects.index'))
             ->assertSee(route('admin.schedules.index'))
+            ->assertSee(route('admin.journals.index'))
             ->assertDontSee(route('admin.students.index'))
             ->assertDontSee(route('admin.announcements.index'))
             ->assertDontSee(route('admin.users.index'));
@@ -92,6 +94,31 @@ class WakasekKurikulumTest extends TestCase
         $this->assertModelMissing($schedule);
     }
 
+    public function test_wakasek_has_full_access_to_teaching_journals(): void
+    {
+        $this->actingAs($this->wakasek());
+
+        $journal = TeachingJournal::firstOrFail();
+        $month = $journal->date->format('Y-m');
+
+        $this->get(route('admin.journals.index', ['month' => $month]))
+            ->assertOk()
+            ->assertSee('Jurnal Mengajar');
+
+        $this->get(route('admin.journals.show', $journal))
+            ->assertOk()
+            ->assertSee($journal->topic);
+
+        $pdf = $this->get(route('admin.journals.export', ['format' => 'pdf', 'month' => $month]));
+        $pdf->assertOk();
+        $this->assertStringContainsString('application/pdf', $pdf->headers->get('content-type'));
+        $this->assertStringStartsWith('%PDF', $pdf->getContent());
+
+        $excel = $this->get(route('admin.journals.export', ['format' => 'xlsx', 'month' => $month]));
+        $excel->assertOk();
+        $this->assertStringContainsString('spreadsheetml', $excel->headers->get('content-type'));
+    }
+
     public function test_wakasek_can_only_read_teachers_classrooms_and_subjects(): void
     {
         $this->actingAs($this->wakasek());
@@ -119,7 +146,6 @@ class WakasekKurikulumTest extends TestCase
         foreach ([
             route('admin.students.index'),
             route('admin.guardians.index'),
-            route('admin.journals.index'),
             route('admin.staff.index'),
             route('admin.organization.index'),
             route('admin.announcements.index'),

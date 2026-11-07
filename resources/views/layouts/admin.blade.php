@@ -48,6 +48,9 @@
                     <a href="{{ route('admin.schedules.index') }}" class="{{ request()->routeIs('admin.schedules.*') ? 'active' : '' }}">
                         <x-icon name="calendar" /> Jadwal
                     </a>
+                    <a href="{{ route('admin.journals.index') }}" class="{{ request()->routeIs('admin.journals.*') ? 'active' : '' }}">
+                        <x-icon name="book-open" /> Jurnal Mengajar
+                    </a>
                 @else
                 <div class="sidebar-label">Data Akademik</div>
                 <a href="{{ route('admin.students.index') }}" class="{{ request()->routeIs('admin.students.*') ? 'active' : '' }}">
