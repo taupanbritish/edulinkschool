@@ -815,7 +815,7 @@ ul { margin: 0; padding-left: 1.1rem; }
 .org-card strong { font-size: .92rem; color: var(--navy-900); }
 .org-card span { font-size: .78rem; color: var(--muted); }
 .org-photo {
-  width: 64px; height: 64px;
+  width: 70px; height: 70px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #fff;
@@ -1450,7 +1450,6 @@ table.data .num { text-align: right; font-variant-numeric: tabular-nums; }
   .today-time { width: auto; }
   .org-card { min-width: 156px; max-width: 176px; padding: .9rem .7rem; }
   .org-children { gap: 1rem; }
-  .org-photo { width: 52px; height: 52px; }
   .student-org-card { padding: 1.4rem; }
   .student-org-media { width: 100%; }
 }
