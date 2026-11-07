@@ -219,15 +219,48 @@ class AdminGuruFlowTest extends TestCase
             ->assertOk()
             ->assertSee('Catatan')
             ->assertSee('Catatan UTS')
-            ->assertViewHas('grades', fn ($grades) => $grades->count() === 1
-                && $grades->first()->student_id === $students[0]->id);
+            ->assertViewHas('grades', fn ($grades) => $grades->total() === 1
+                && $grades->items()[0]->student_id === $students[0]->id);
 
         $this->get(route('guru.grades.index', [
             'assignment' => $assignment->id,
             'sort' => 'jenis',
         ]))
             ->assertOk()
-            ->assertViewHas('grades', fn ($grades) => $grades->pluck('type')->all() === ['tugas', 'uts']);
+            ->assertViewHas('grades', fn ($grades) => collect($grades->items())->pluck('type')->all() === ['tugas', 'uts']);
+    }
+
+    public function test_teacher_grade_history_is_paginated_and_keeps_filters(): void
+    {
+        $teacher = Teacher::whereHas('user', fn ($q) => $q->where('email', 'guru@sekolah.id'))->firstOrFail();
+        $assignment = TeachingAssignment::where('teacher_id', $teacher->id)->firstOrFail();
+        $student = Student::where('classroom_id', $assignment->classroom_id)->firstOrFail();
+        $total = Grade::where('teaching_assignment_id', $assignment->id)->count() + 18;
+
+        foreach (range(1, 18) as $index) {
+            Grade::create([
+                'teaching_assignment_id' => $assignment->id,
+                'student_id' => $student->id,
+                'type' => 'tugas',
+                'score' => 70 + $index,
+                'recorded_at' => '2026-10-'.str_pad((string) $index, 2, '0', STR_PAD_LEFT),
+            ]);
+        }
+
+        $this->login('guru@sekolah.id', 'guru123');
+
+        $this->get(route('guru.grades.index', ['assignment' => $assignment->id, 'sort' => 'terbaru']))
+            ->assertOk()
+            ->assertSee('aria-label="Navigasi halaman"', false)
+            ->assertViewHas('grades', fn ($grades) => $grades->perPage() === 15
+                && $grades->count() === 15
+                && $grades->total() === $total);
+
+        $this->get(route('guru.grades.index', ['assignment' => $assignment->id, 'sort' => 'terbaru', 'page' => 2]))
+            ->assertOk()
+            ->assertSee('aria-current="page">2<', false)
+            ->assertViewHas('grades', fn ($grades) => $grades->currentPage() === 2
+                && $grades->count() === min(15, $total - 15));
     }
 
     public function test_teacher_exports_grade_and_attendance_reports_as_pdf_and_excel(): void

@@ -44,7 +44,8 @@ class GradeController extends Controller
                     ->orderByRaw("case type when 'tugas' then 1 when 'uts' then 2 when 'uas' then 3 when 'proyek' then 4 else 5 end")
                     ->orderByDesc('recorded_at'))
                 ->when($sort === 'terbaru', fn ($query) => $query->latest('recorded_at'))
-                ->get();
+                ->paginate(15)
+                ->withQueryString();
         }
 
         return view('guru.grades', [

@@ -37,7 +37,7 @@
             @endif
         </form>
         @if($selected)
-            <span class="muted" style="font-size:.8rem">{{ $students->count() }} siswa · {{ $grades->count() }} nilai tercatat</span>
+            <span class="muted" style="font-size:.8rem">{{ $students->count() }} siswa · {{ $grades->total() }} nilai tercatat</span>
         @endif
     </div>
 </div>
@@ -76,6 +76,7 @@
                     </table>
                 </div>
             </div>
+            @include('partials.pagination', ['paginator' => $grades])
         </div>
 
         <div class="panel">

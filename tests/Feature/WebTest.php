@@ -86,7 +86,8 @@ class WebTest extends TestCase
             ->assertDontSee('Zulkifli Guru 1')
             ->assertDontSee('Zulaikha Staf 2');
 
-        $this->assertSame(2, substr_count($response->getContent(), 'Halaman 1 dari 2'));
+        $this->assertSame(2, substr_count($response->getContent(), 'aria-label="Navigasi halaman"'));
+        $this->assertSame(2, substr_count($response->getContent(), 'aria-label="Halaman 2"'));
 
         $this->get('/profil?guru_page=2')
             ->assertOk()

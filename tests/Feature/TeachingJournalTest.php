@@ -279,6 +279,44 @@ class TeachingJournalTest extends TestCase
             ->assertSee($journal->topic);
     }
 
+    public function test_teacher_journal_table_is_paginated_per_month(): void
+    {
+        $this->login('guru@sekolah.id');
+
+        $teacher = $this->teacher();
+        $schedule = $this->ownSchedule();
+
+        foreach (range(1, 16) as $index) {
+            $label = str_pad((string) $index, 2, '0', STR_PAD_LEFT);
+
+            TeachingJournal::create([
+                'teaching_assignment_id' => $schedule->teaching_assignment_id,
+                'schedule_id' => $schedule->id,
+                'date' => '2026-09-'.$label,
+                'starts_at' => $schedule->starts_at,
+                'ends_at' => $schedule->ends_at,
+                'topic' => 'Materi paginasi '.$label,
+                'activity' => 'Kegiatan paginasi '.$label,
+                'created_by' => $teacher->user_id,
+            ]);
+        }
+
+        $this->get(route('guru.journals.index', ['month' => '2026-09']))
+            ->assertOk()
+            ->assertSee('aria-label="Navigasi halaman"', false)
+            ->assertSee('Materi paginasi 16')
+            ->assertDontSee('Materi paginasi 01')
+            ->assertViewHas('journals', fn ($journals) => $journals->total() === 16
+                && $journals->perPage() === 15
+                && $journals->count() === 15);
+
+        $this->get(route('guru.journals.index', ['month' => '2026-09', 'page' => 2]))
+            ->assertOk()
+            ->assertSee('Materi paginasi 01')
+            ->assertViewHas('journals', fn ($journals) => $journals->currentPage() === 2
+                && $journals->count() === 1);
+    }
+
     public function test_admin_and_headmaster_can_review_and_export_journals(): void
     {
         $this->login('kepsek@sekolah.id', 'kepsek123');
