@@ -776,7 +776,7 @@ ul { margin: 0; padding-left: 1.1rem; }
   box-shadow: var(--shadow-sm);
 }
 .teacher-avatar {
-  width: 48px; height: 48px;
+  width: 56px; height: 56px;
   border-radius: 12px;
   background: linear-gradient(140deg, #e0f2fe, #bae6fd);
   color: var(--navy-800);
