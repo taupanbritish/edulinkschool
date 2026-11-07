@@ -3,7 +3,7 @@
 @section('title', 'Data Guru')
 
 @section('content')
-<div class="page-head">
+<div class="page-head{{ auth()->user()->isWakasekKurikulum() ? ' panel-readonly' : '' }}">
     <div>
         <h1>Data Guru</h1>
         <p>Kelola tenaga pendidik, wali kelas, dan akun ruang guru.</p>
@@ -24,7 +24,7 @@
     </div>
 </div>
 
-<div class="panel">
+<div class="panel{{ auth()->user()->isWakasekKurikulum() ? ' panel-readonly' : '' }}">
     <div class="panel-head">
         <form method="GET" action="{{ route('admin.teachers.index') }}" class="filter-bar">
             <input type="search" name="q" value="{{ request('q') }}" class="input" placeholder="Cari nama atau NIP…">

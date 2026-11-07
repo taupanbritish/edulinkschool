@@ -72,50 +72,58 @@ Route::middleware('guest')->group(function () {
 
 Route::post('/logout', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
-Route::middleware(['auth', 'role:admin,petugas,kepala_sekolah', 'panel.writable'])->prefix('admin')->name('admin.')->group(function () {
-    Route::get('/', DashboardController::class)->name('dashboard');
+Route::middleware(['auth', 'panel.writable'])->prefix('admin')->name('admin.')->group(function () {
+    Route::middleware('role:admin,petugas,kepala_sekolah,wakasek_kurikulum')->group(function () {
+        Route::get('/', DashboardController::class)->name('dashboard');
 
-    Route::post('accounts/generate/{type}', [AccountGenerationController::class, 'generate'])
-        ->whereIn('type', ['guru', 'siswa', 'wali'])
-        ->name('accounts.generate');
+        Route::resource('teachers', TeacherController::class)->only('index');
+        Route::resource('classrooms', ClassroomController::class)->only('index');
+        Route::resource('subjects', SubjectController::class)->only('index');
+        Route::resource('schedules', ScheduleController::class)->except('show');
+    });
 
-    Route::resource('students', StudentController::class)->except('show');
-    Route::resource('teachers', TeacherController::class)->except('show');
-    Route::resource('guardians', GuardianController::class)->except('show');
-    Route::resource('classrooms', ClassroomController::class)->except('show');
-    Route::resource('subjects', SubjectController::class)->except('show');
-    Route::delete('subjects/{subject}/assignments/{assignment}', [SubjectController::class, 'destroyAssignment'])
-        ->scopeBindings()
-        ->name('subjects.assignments.destroy');
-    Route::resource('schedules', ScheduleController::class)->except('show');
-    Route::get('journals', [AdminTeachingJournalController::class, 'index'])->name('journals.index');
-    Route::get('journals/export/{format}', [AdminTeachingJournalController::class, 'export'])
-        ->whereIn('format', ['pdf', 'xlsx'])
-        ->name('journals.export');
-    Route::get('journals/{journal}', [AdminTeachingJournalController::class, 'show'])->name('journals.show');
-    Route::resource('staff', StaffController::class)->except('show');
-    Route::resource('organization', OrganizationMemberController::class)->except('show');
-    Route::resource('announcements', AnnouncementController::class)->except('show');
-    Route::resource('writings', StudentWritingController::class)->except('show');
-    Route::resource('contact-messages', ContactMessageController::class)->only(['index', 'show', 'destroy']);
-    Route::resource('facilities', FacilityController::class)->except('show');
-    Route::resource('extracurriculars', ExtracurricularController::class)->except('show');
-    Route::resource('student-organizations', StudentOrganizationController::class)->except('show');
-    Route::resource('counseling-services', CounselingServiceController::class)->except('show');
-    Route::resource('achievements', AchievementController::class)->except('show');
-    Route::resource('curriculum-groups', CurriculumGroupController::class)->except('show');
-    Route::resource('academic-events', AcademicEventController::class)->except('show');
-    Route::resource('alumni', AlumniController::class)->except('show')->parameters(['alumni' => 'alumni']);
+    Route::middleware('role:admin,petugas,kepala_sekolah')->group(function () {
+        Route::post('accounts/generate/{type}', [AccountGenerationController::class, 'generate'])
+            ->whereIn('type', ['guru', 'siswa', 'wali'])
+            ->name('accounts.generate');
 
-    Route::get('import/{type}/template', [ImportController::class, 'template'])
-        ->whereIn('type', ['siswa', 'guru', 'kelas', 'mapel'])
-        ->name('imports.template');
-    Route::get('import/{type}', [ImportController::class, 'form'])
-        ->whereIn('type', ['siswa', 'guru', 'kelas', 'mapel'])
-        ->name('imports.form');
-    Route::post('import/{type}', [ImportController::class, 'import'])
-        ->whereIn('type', ['siswa', 'guru', 'kelas', 'mapel'])
-        ->name('imports.store');
+        Route::resource('students', StudentController::class)->except('show');
+        Route::resource('teachers', TeacherController::class)->except(['show', 'index']);
+        Route::resource('guardians', GuardianController::class)->except('show');
+        Route::resource('classrooms', ClassroomController::class)->except(['show', 'index']);
+        Route::resource('subjects', SubjectController::class)->except(['show', 'index']);
+        Route::delete('subjects/{subject}/assignments/{assignment}', [SubjectController::class, 'destroyAssignment'])
+            ->scopeBindings()
+            ->name('subjects.assignments.destroy');
+        Route::get('journals', [AdminTeachingJournalController::class, 'index'])->name('journals.index');
+        Route::get('journals/export/{format}', [AdminTeachingJournalController::class, 'export'])
+            ->whereIn('format', ['pdf', 'xlsx'])
+            ->name('journals.export');
+        Route::get('journals/{journal}', [AdminTeachingJournalController::class, 'show'])->name('journals.show');
+        Route::resource('staff', StaffController::class)->except('show');
+        Route::resource('organization', OrganizationMemberController::class)->except('show');
+        Route::resource('announcements', AnnouncementController::class)->except('show');
+        Route::resource('writings', StudentWritingController::class)->except('show');
+        Route::resource('contact-messages', ContactMessageController::class)->only(['index', 'show', 'destroy']);
+        Route::resource('facilities', FacilityController::class)->except('show');
+        Route::resource('extracurriculars', ExtracurricularController::class)->except('show');
+        Route::resource('student-organizations', StudentOrganizationController::class)->except('show');
+        Route::resource('counseling-services', CounselingServiceController::class)->except('show');
+        Route::resource('achievements', AchievementController::class)->except('show');
+        Route::resource('curriculum-groups', CurriculumGroupController::class)->except('show');
+        Route::resource('academic-events', AcademicEventController::class)->except('show');
+        Route::resource('alumni', AlumniController::class)->except('show')->parameters(['alumni' => 'alumni']);
+
+        Route::get('import/{type}/template', [ImportController::class, 'template'])
+            ->whereIn('type', ['siswa', 'guru', 'kelas', 'mapel'])
+            ->name('imports.template');
+        Route::get('import/{type}', [ImportController::class, 'form'])
+            ->whereIn('type', ['siswa', 'guru', 'kelas', 'mapel'])
+            ->name('imports.form');
+        Route::post('import/{type}', [ImportController::class, 'import'])
+            ->whereIn('type', ['siswa', 'guru', 'kelas', 'mapel'])
+            ->name('imports.store');
+    });
 
     Route::middleware('role:admin')->group(function () {
         Route::resource('users', PanelUserController::class)->except('show');
@@ -163,7 +171,7 @@ Route::middleware(['auth', 'role:guru'])->prefix('guru')->name('guru.')->group(f
 
 Route::get('/dashboard', function () {
     return match (auth()->user()->role) {
-        'admin', 'petugas', 'kepala_sekolah' => redirect()->route('admin.dashboard'),
+        'admin', 'petugas', 'kepala_sekolah', 'wakasek_kurikulum' => redirect()->route('admin.dashboard'),
         'guru' => redirect()->route('guru.dashboard'),
         default => redirect()->route('home'),
     };

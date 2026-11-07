@@ -3,7 +3,7 @@
 @section('title', 'Mata Pelajaran')
 
 @section('content')
-<div class="page-head">
+<div class="page-head{{ auth()->user()->isWakasekKurikulum() ? ' panel-readonly' : '' }}">
     <div>
         <h1>Mata Pelajaran</h1>
         <p>Daftar mata pelajaran yang diajarkan di sekolah.</p>
@@ -14,7 +14,7 @@
     </div>
 </div>
 
-<div class="panel">
+<div class="panel{{ auth()->user()->isWakasekKurikulum() ? ' panel-readonly' : '' }}">
     <div class="panel-body flush">
         <div class="table-wrap">
             <table class="data">

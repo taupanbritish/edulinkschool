@@ -80,6 +80,7 @@ class DatabaseSeeder extends Seeder
             ['Administrator Sekolah', 'admin@sekolah.id', 'admin123', User::ROLE_ADMIN, '0812-3456-7890'],
             ['Petugas Web Sekolah', 'petugas@sekolah.id', 'petugas123', User::ROLE_PETUGAS, '0812-3456-7891'],
             ['Dra. Siti Rahmawati, M.Pd.', 'kepsek@sekolah.id', 'kepsek123', User::ROLE_KEPALA_SEKOLAH, '0812-3456-7892'],
+            ['Drs. Agus Priyanto, M.Pd.', 'wakasek@sekolah.id', 'wakasek123', User::ROLE_WAKASEK_KURIKULUM, '0812-3456-7893'],
         ];
 
         foreach ($accounts as [$name, $email, $password, $role, $phone]) {

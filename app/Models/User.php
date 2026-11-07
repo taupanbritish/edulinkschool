@@ -17,6 +17,8 @@ class User extends Authenticatable
 
     public const ROLE_KEPALA_SEKOLAH = 'kepala_sekolah';
 
+    public const ROLE_WAKASEK_KURIKULUM = 'wakasek_kurikulum';
+
     public const ROLE_GURU = 'guru';
 
     public const ROLE_SISWA = 'siswa';
@@ -27,6 +29,7 @@ class User extends Authenticatable
         self::ROLE_ADMIN => 'Administrator',
         self::ROLE_PETUGAS => 'Petugas Web',
         self::ROLE_KEPALA_SEKOLAH => 'Kepala Sekolah',
+        self::ROLE_WAKASEK_KURIKULUM => 'Wakasek Kurikulum',
     ];
 
     protected $fillable = [
@@ -85,6 +88,11 @@ class User extends Authenticatable
     public function isKepalaSekolah(): bool
     {
         return $this->role === self::ROLE_KEPALA_SEKOLAH;
+    }
+
+    public function isWakasekKurikulum(): bool
+    {
+        return $this->role === self::ROLE_WAKASEK_KURIKULUM;
     }
 
     public function isPanelUser(): bool

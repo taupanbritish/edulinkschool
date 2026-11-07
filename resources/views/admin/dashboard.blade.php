@@ -9,7 +9,9 @@
         <p>Ringkasan aktivitas akademik {{ $school['school_short'] ?? 'sekolah' }} — {{ now()->locale('id')->translatedFormat('l, d F Y') }}</p>
     </div>
     <div class="page-actions">
-        <a href="{{ route('admin.announcements.create') }}" class="btn btn-primary btn-sm"><x-icon name="plus" size="15px" /> Buat Pengumuman</a>
+        @unless(auth()->user()->isWakasekKurikulum())
+            <a href="{{ route('admin.announcements.create') }}" class="btn btn-primary btn-sm"><x-icon name="plus" size="15px" /> Buat Pengumuman</a>
+        @endunless
         <a href="{{ route('home') }}" target="_blank" rel="noopener" class="btn btn-outline btn-sm keep-readonly">Lihat Website</a>
     </div>
 </div>
@@ -65,31 +67,33 @@
             </div>
         </div>
 
-        <div class="panel">
-            <div class="panel-head">
-                <h2>Siswa Terbaru</h2>
-                <a href="{{ route('admin.students.index') }}" class="btn btn-ghost btn-sm">Semua siswa <x-icon name="arrow-right" size="14px" /></a>
-            </div>
-            <div class="panel-body flush">
-                <div class="table-wrap">
-                    <table class="data">
-                        <thead>
-                            <tr><th>Nama</th><th>NIS</th><th>Kelas</th><th>Wali Murid</th></tr>
-                        </thead>
-                        <tbody>
-                            @foreach($recentStudents as $student)
-                                <tr>
-                                    <td><span class="cell-main">{{ $student->name }}</span></td>
-                                    <td>{{ $student->nis }}</td>
-                                    <td>{{ $student->classroom->name }}</td>
-                                    <td>{{ $student->guardian?->name ?? '-' }}</td>
-                                </tr>
-                            @endforeach
-                        </tbody>
-                    </table>
+        @unless(auth()->user()->isWakasekKurikulum())
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Siswa Terbaru</h2>
+                    <a href="{{ route('admin.students.index') }}" class="btn btn-ghost btn-sm">Semua siswa <x-icon name="arrow-right" size="14px" /></a>
+                </div>
+                <div class="panel-body flush">
+                    <div class="table-wrap">
+                        <table class="data">
+                            <thead>
+                                <tr><th>Nama</th><th>NIS</th><th>Kelas</th><th>Wali Murid</th></tr>
+                            </thead>
+                            <tbody>
+                                @foreach($recentStudents as $student)
+                                    <tr>
+                                        <td><span class="cell-main">{{ $student->name }}</span></td>
+                                        <td>{{ $student->nis }}</td>
+                                        <td>{{ $student->classroom->name }}</td>
+                                        <td>{{ $student->guardian?->name ?? '-' }}</td>
+                                    </tr>
+                                @endforeach
+                            </tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
-        </div>
+        @endunless
     </div>
 
     <div class="stack">
@@ -108,25 +112,27 @@
             </div>
         </div>
 
-        <div class="panel">
-            <div class="panel-head">
-                <h2>Berita Terbaru</h2>
-                <a href="{{ route('admin.announcements.index') }}" class="btn btn-ghost btn-sm">Kelola <x-icon name="arrow-right" size="14px" /></a>
-            </div>
-            <div class="panel-body flush">
-                @forelse($latestAnnouncements as $item)
-                    <div class="today-item">
-                        <div style="flex:1">
-                            <strong>{{ $item->title }}</strong>
-                            <span>{{ $item->published_at?->locale('id')->translatedFormat('d M Y') ?? 'Belum dipublikasikan' }}</span>
+        @unless(auth()->user()->isWakasekKurikulum())
+            <div class="panel">
+                <div class="panel-head">
+                    <h2>Berita Terbaru</h2>
+                    <a href="{{ route('admin.announcements.index') }}" class="btn btn-ghost btn-sm">Kelola <x-icon name="arrow-right" size="14px" /></a>
+                </div>
+                <div class="panel-body flush">
+                    @forelse($latestAnnouncements as $item)
+                        <div class="today-item">
+                            <div style="flex:1">
+                                <strong>{{ $item->title }}</strong>
+                                <span>{{ $item->published_at?->locale('id')->translatedFormat('d M Y') ?? 'Belum dipublikasikan' }}</span>
+                            </div>
+                            <span class="badge {{ $item->is_published ? 'badge-success' : 'badge-neutral' }}">{{ $item->is_published ? 'Terbit' : 'Draf' }}</span>
                         </div>
-                        <span class="badge {{ $item->is_published ? 'badge-success' : 'badge-neutral' }}">{{ $item->is_published ? 'Terbit' : 'Draf' }}</span>
-                    </div>
-                @empty
-                    <div class="empty-state">Belum ada berita.</div>
-                @endforelse
+                    @empty
+                        <div class="empty-state">Belum ada berita.</div>
+                    @endforelse
+                </div>
             </div>
-        </div>
+        @endunless
     </div>
 </div>
 

@@ -3,7 +3,7 @@
 @section('title', 'Kelas')
 
 @section('content')
-<div class="page-head">
+<div class="page-head{{ auth()->user()->isWakasekKurikulum() ? ' panel-readonly' : '' }}">
     <div>
         <h1>Kelas</h1>
         <p>Rombongan belajar, wali kelas, dan tahun pelajaran.</p>
@@ -14,7 +14,7 @@
     </div>
 </div>
 
-<div class="panel">
+<div class="panel{{ auth()->user()->isWakasekKurikulum() ? ' panel-readonly' : '' }}">
     <div class="panel-body flush">
         <div class="table-wrap">
             <table class="data">

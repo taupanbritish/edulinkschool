@@ -15,7 +15,17 @@
             <x-brand-mark />
             <div>
                 <strong>{{ $school['school_short'] ?? 'Sekolah' }}</strong>
-                <span>{{ auth()->user()->isReadOnly() ? 'Panel Kepala Sekolah' : (auth()->user()->isPanelUser() ? 'Panel Admin' : 'Ruang Guru') }}</span>
+                <span>
+                    @if(auth()->user()->isReadOnly())
+                        Panel Kepala Sekolah
+                    @elseif(auth()->user()->isWakasekKurikulum())
+                        Panel Wakasek Kurikulum
+                    @elseif(auth()->user()->isPanelUser())
+                        Panel Admin
+                    @else
+                        Ruang Guru
+                    @endif
+                </span>
             </div>
         </div>
 
@@ -24,6 +34,21 @@
                 <a href="{{ route('admin.dashboard') }}" class="{{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
                     <x-icon name="dashboard" /> Dashboard
                 </a>
+                @if(auth()->user()->isWakasekKurikulum())
+                    <div class="sidebar-label">Akademik</div>
+                    <a href="{{ route('admin.teachers.index') }}" class="{{ request()->routeIs('admin.teachers.*') ? 'active' : '' }}">
+                        <x-icon name="users" /> Guru
+                    </a>
+                    <a href="{{ route('admin.classrooms.index') }}" class="{{ request()->routeIs('admin.classrooms.*') ? 'active' : '' }}">
+                        <x-icon name="school" /> Kelas
+                    </a>
+                    <a href="{{ route('admin.subjects.index') }}" class="{{ request()->routeIs('admin.subjects.*') ? 'active' : '' }}">
+                        <x-icon name="book" /> Mata Pelajaran
+                    </a>
+                    <a href="{{ route('admin.schedules.index') }}" class="{{ request()->routeIs('admin.schedules.*') ? 'active' : '' }}">
+                        <x-icon name="calendar" /> Jadwal
+                    </a>
+                @else
                 <div class="sidebar-label">Data Akademik</div>
                 <a href="{{ route('admin.students.index') }}" class="{{ request()->routeIs('admin.students.*') ? 'active' : '' }}">
                     <x-icon name="graduation-cap" /> Siswa
@@ -96,6 +121,7 @@
                     <a href="{{ route('admin.settings.edit') }}" class="{{ request()->routeIs('admin.settings.*', 'admin.backups.*', 'admin.restore.*') ? 'active' : '' }}">
                         <x-icon name="settings" /> Pengaturan
                     </a>
+                @endif
                 @endif
             @else
                 <a href="{{ route('guru.dashboard') }}" class="{{ request()->routeIs('guru.dashboard') ? 'active' : '' }}">

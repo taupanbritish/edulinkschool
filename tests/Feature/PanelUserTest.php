@@ -51,12 +51,14 @@ class PanelUserTest extends TestCase
         $this->get(route('admin.users.index'))
             ->assertOk()
             ->assertSee('Petugas Web Sekolah')
-            ->assertSee('Kepala Sekolah');
+            ->assertSee('Kepala Sekolah')
+            ->assertSee('Wakasek Kurikulum');
 
         $this->get(route('admin.users.create'))
             ->assertOk()
             ->assertSee('Petugas Web')
-            ->assertSee('Kepala Sekolah');
+            ->assertSee('Kepala Sekolah')
+            ->assertSee('Wakasek Kurikulum');
 
         $this->post(route('admin.users.store'), [
             'name' => 'Petugas Baru',
@@ -150,7 +152,7 @@ class PanelUserTest extends TestCase
 
     public function test_panel_accounts_are_routed_to_admin_dashboard_after_login(): void
     {
-        foreach ([['petugas@sekolah.id', 'petugas123'], ['kepsek@sekolah.id', 'kepsek123']] as [$email, $password]) {
+        foreach ([['petugas@sekolah.id', 'petugas123'], ['kepsek@sekolah.id', 'kepsek123'], ['wakasek@sekolah.id', 'wakasek123']] as [$email, $password]) {
             $this->post('/login', ['email' => $email, 'password' => $password])
                 ->assertRedirect('/dashboard');
 
